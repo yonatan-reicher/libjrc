@@ -27,9 +27,9 @@ SRCS         := $(wildcard $(SRC_DIR)/*.c)
 OBJS         := $(patsubst $(SRC_DIR)/%.c, $(OBJ_DIR)/%.o, $(SRCS))
 
 # --- Targets ------------------------------------------------------------------
-.PHONY: all debug clean install uninstall help
+.PHONY: build debug test clean install uninstall help
 
-all: $(TARGET)
+build: $(TARGET)
 
 ## Build the static library
 $(TARGET): $(OBJS) | $(LIB_DIR)
@@ -48,9 +48,18 @@ debug: clean $(TARGET)
 $(OBJ_DIR) $(LIB_DIR):
 	mkdir -p $@
 
+
+# --- Test ---------------------------------------------------------------------
+# The tests have their own separate makefile, so we just give them the .a file
+# and delegate to them
+test: $(TARGET) test/*
+	cd test && make
+
 # --- Install & Uninstall ------------------------------------------------------
-install: all
+install: build
+	@echo "Making sure installation directories exist"
 	install -d $(INSTALL_LIB) $(INSTALL_INC)
+	@echo "Copying files"
 	install -m 0644 $(TARGET) $(INSTALL_LIB)/
 	install -m 0644 $(INC_DIR)/*.h $(INSTALL_INC)/
 	@echo "Installed to $(PREFIX)"
@@ -68,8 +77,9 @@ clean:
 help:
 	@echo "Usage: make [target]"
 	@echo ""
-	@echo "  all       Build the static library (default)"
+	@echo "  build     Build the static library (default)"
 	@echo "  debug     Build with debug symbols and no optimisation"
+	@echo "  test      Run all tests"
 	@echo "  install   Install library and headers to PREFIX (default: /usr/local)"
 	@echo "  uninstall Remove installed files"
 	@echo "  clean     Remove all build artifacts"
