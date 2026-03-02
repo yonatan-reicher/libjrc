@@ -1,3 +1,5 @@
+#include <stdlib.h>
+
 /** Mark a variable as unused */
 #define UNUSED(X) (void)(X)
 
